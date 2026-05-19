@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+.pytest_cache/
+
+# Virtual envs
+.venv/
+venv/
+env/
+
+# Build artifacts
+build/
+dist/
+*.spec.bak
+*.zip
+
+# IDE
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# App runtime data (user-specific, never commit)
+.whispertyper/
+config.json
+history.jsonl
+target_prefs.json
+
+# Logs
+*.log

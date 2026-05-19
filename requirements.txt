@@ -1,0 +1,12 @@
+faster-whisper>=1.0.3
+sounddevice>=0.4.6
+numpy>=1.24
+PySide6>=6.6
+pynput>=1.7.6
+pywin32>=306
+uiautomation>=2.0.18
+pyperclip>=1.8.2
+psutil>=5.9
+# Optional TTS backends:
+# pip install kokoro-onnx   # primary, ~330MB model auto-downloaded
+# pip install piper-tts     # fallback, tiny ONNX voices
