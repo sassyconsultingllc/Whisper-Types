@@ -4,6 +4,9 @@ REM Output: dist\WhisperTyper\WhisperTyper.exe
 setlocal
 cd /d "%~dp0"
 
+REM Use fast spec (excludes problematic QML)
+set SPEC=whispertyper_fast.spec
+
 if not exist ".venv\Scripts\python.exe" (
     echo Creating venv...
     python -m venv .venv || goto :err
@@ -16,10 +19,14 @@ pip install pyinstaller || goto :err
 REM Optional: install TTS backends so they get bundled
 pip install kokoro-onnx 2>nul
 
+REM Install CUDA runtime DLLs (required for ctranslate2)
+pip install nvidia-cublas-cu12 nvidia-cuda-runtime-cu12 nvidia-cudnn-cu12 2>nul
+
 if exist build rmdir /s /q build
 if exist dist\WhisperTyper rmdir /s /q dist\WhisperTyper
 
-pyinstaller whispertyper.spec --clean --noconfirm || goto :err
+echo Building with %SPEC%...
+pyinstaller %SPEC% --clean --noconfirm || goto :err
 
 echo.
 echo Built: dist\WhisperTyper\WhisperTyper.exe
