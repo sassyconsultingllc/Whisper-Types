@@ -14,6 +14,9 @@ python -m pip install --upgrade pip
 pip install -r requirements.txt || goto :err
 pip install pyinstaller || goto :err
 pip install kokoro-onnx 2>nul
+if errorlevel 1 (
+    echo [WARN] Optional kokoro-onnx install failed. TTS features may be limited.
+)
 
 REM NOTE: Do NOT install nvidia-*-cu12 here - slim build excludes CUDA DLLs
 REM       Users who want GPU run enable_gpu.bat after install.

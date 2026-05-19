@@ -12,21 +12,28 @@ echo  WhisperTyper - GPU Acceleration Setup
 echo ============================================================
 echo.
 
-:: Check for NVIDIA GPU
-nvidia-smi >nul 2>&1
+:: Check Python
+where python >nul 2>&1
 if errorlevel 1 (
-    echo [WARN] nvidia-smi not found. This script is only for NVIDIA GPU users.
-    echo        WhisperTyper will run on CPU instead - that is totally fine.
-    echo.
+    echo [ERROR] Python not found. Install Python from https://python.org/downloads/
     pause
     exit /b 1
 )
 
-echo [OK] NVIDIA GPU detected.
-echo.
+:: Check for NVIDIA GPU (best-effort)
+nvidia-smi >nul 2>&1
+if errorlevel 1 (
+    echo [WARN] nvidia-smi not found in PATH. If you have an NVIDIA GPU,
+    echo        you can still try this setup. Otherwise, WhisperTyper will
+    echo        run on CPU - that is totally fine.
+    echo.
+) else (
+    echo [OK] NVIDIA GPU detected.
+    echo.
+)
 
-:: Check pip
-where pip >nul 2>&1
+:: Check pip via python -m pip
+python -m pip --version >nul 2>&1
 if errorlevel 1 (
     echo [ERROR] pip not found. Install Python from https://python.org/downloads/
     pause
@@ -46,7 +53,7 @@ if errorlevel 1 (
     exit /b 1
 )
 
-"%TMPVENV%\Scripts\pip.exe" install --quiet ^
+"%TMPVENV%\Scripts\python.exe" -m pip install --quiet ^
     nvidia-cublas-cu12 ^
     nvidia-cuda-runtime-cu12 ^
     nvidia-cudnn-cu12

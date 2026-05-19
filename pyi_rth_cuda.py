@@ -7,22 +7,30 @@ etc. are found. Supports two layouts:
 """
 import os
 import pathlib
+import sys
 
 
 def _setup_cuda_dll_search():
     try:
-        app_dir = pathlib.Path(os.path.dirname(os.path.abspath(__file__)))
-        os.add_dll_directory(str(app_dir))
+        app_dirs = []
+        app_dirs.append(pathlib.Path(os.path.dirname(os.path.abspath(__file__))))
+        if getattr(sys, "frozen", False):
+            app_dirs.append(pathlib.Path(sys.executable).parent)
+            if hasattr(sys, "_MEIPASS"):
+                app_dirs.append(pathlib.Path(sys._MEIPASS))
 
-        # Slim build: user-supplied DLLs in _cuda_dlls/ next to the exe
-        cuda_dlls = app_dir / "_cuda_dlls"
-        if cuda_dlls.is_dir():
-            os.add_dll_directory(str(cuda_dlls))
+        for app_dir in app_dirs:
+            os.add_dll_directory(str(app_dir))
 
-        # Full build: nvidia/*/bin subdirs bundled by full spec
-        for nvidia_dir in app_dir.glob("nvidia/*/bin"):
-            if nvidia_dir.is_dir():
-                os.add_dll_directory(str(nvidia_dir))
+            # Slim build: user-supplied DLLs in _cuda_dlls/ next to the exe
+            cuda_dlls = app_dir / "_cuda_dlls"
+            if cuda_dlls.is_dir():
+                os.add_dll_directory(str(cuda_dlls))
+
+            # Full build: nvidia/*/bin subdirs bundled by full spec
+            for nvidia_dir in app_dir.glob("nvidia/*/bin"):
+                if nvidia_dir.is_dir():
+                    os.add_dll_directory(str(nvidia_dir))
     except Exception:
         pass
 

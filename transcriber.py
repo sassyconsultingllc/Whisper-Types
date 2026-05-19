@@ -18,11 +18,14 @@ def _add_nvidia_dll_dirs():
     except Exception:
         pass
     try:
+        import sys
         import site
-        for sp in site.getsitepackages():
-            for d in pathlib.Path(sp).glob("nvidia/*/bin"):
-                if d.is_dir():
-                    os.add_dll_directory(str(d))
+        allow_site_cuda = os.environ.get("WT_ALLOW_SITE_CUDA", "0") == "1"
+        if allow_site_cuda or not getattr(sys, "frozen", False):
+            for sp in site.getsitepackages():
+                for d in pathlib.Path(sp).glob("nvidia/*/bin"):
+                    if d.is_dir():
+                        os.add_dll_directory(str(d))
     except Exception:
         pass
 
