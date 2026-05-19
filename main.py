@@ -880,7 +880,30 @@ class MiniBar(QWidget):
         e.accept()
 
 
+def _ensure_single_instance():
+    """Use a Windows named mutex to prevent multiple instances."""
+    try:
+        import ctypes
+        mutex = ctypes.windll.kernel32.CreateMutexW(None, False, "WhisperTyper_SingleInstance")
+        if ctypes.windll.kernel32.GetLastError() == 183:  # ERROR_ALREADY_EXISTS
+            # Bring the existing window to the foreground
+            import win32gui
+            def _cb(hwnd, _):
+                if win32gui.IsWindowVisible(hwnd) and "WhisperTyper" in win32gui.GetWindowText(hwnd):
+                    win32gui.ShowWindow(hwnd, 9)  # SW_RESTORE
+                    win32gui.SetForegroundWindow(hwnd)
+                    return False
+                return True
+            win32gui.EnumWindows(_cb, None)
+            return False
+    except Exception:
+        pass
+    return True
+
+
 def main():
+    if not _ensure_single_instance():
+        sys.exit(0)
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)
     app.setStyle("Fusion")

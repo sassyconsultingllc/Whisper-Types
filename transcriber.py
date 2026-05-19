@@ -3,9 +3,20 @@ import os
 import pathlib
 import threading
 
-# Add nvidia CUDA DLL directories (installed via pip nvidia-*-cu12 packages)
-# so ctranslate2 can find cublas64_12.dll etc. without the full CUDA Toolkit.
+# Add CUDA DLL directories so ctranslate2 can find cublas64_12.dll etc.
+# Searches (in order):
+#   1. _cuda_dlls/ folder next to the exe (populated by enable_gpu.bat)
+#   2. nvidia/*/bin inside site-packages (pip nvidia-*-cu12 packages)
 def _add_nvidia_dll_dirs():
+    try:
+        # Bundled exe: look for _cuda_dlls/ next to WhisperTyper.exe
+        import sys
+        exe_dir = pathlib.Path(sys.executable).parent
+        cuda_dlls_dir = exe_dir / "_cuda_dlls"
+        if cuda_dlls_dir.is_dir():
+            os.add_dll_directory(str(cuda_dlls_dir))
+    except Exception:
+        pass
     try:
         import site
         for sp in site.getsitepackages():
@@ -16,6 +27,16 @@ def _add_nvidia_dll_dirs():
         pass
 
 _add_nvidia_dll_dirs()
+
+
+def _cuda_available() -> bool:
+    """Return True only if ctranslate2 can actually see a CUDA device."""
+    try:
+        import ctranslate2
+        return ctranslate2.get_cuda_device_count() > 0
+    except Exception:
+        # Missing DLLs, driver too old, no GPU — fall back to CPU silently
+        return False
 
 
 class Transcriber:
@@ -32,11 +53,7 @@ class Transcriber:
         dev = self.device
         ct = self.compute_type
         if dev == "auto":
-            try:
-                import ctranslate2
-                dev = "cuda" if ctranslate2.get_cuda_device_count() > 0 else "cpu"
-            except Exception:
-                dev = "cpu"
+            dev = "cuda" if _cuda_available() else "cpu"
         if ct == "auto":
             ct = "float16" if dev == "cuda" else "int8"
         return dev, ct
